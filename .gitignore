@@ -1,0 +1,6 @@
+main
+*.o
+*.png
+*.eps
+*~
+eigen/
