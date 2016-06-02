@@ -14,6 +14,7 @@ void lu_double(double *m){
     }
   }
 }
+
 /*
 void lu_complex_double(dcomplex *m){
   int i,j,k;

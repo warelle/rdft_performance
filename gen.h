@@ -9,6 +9,7 @@ double rand_normal_double(double m, double s);
 
 // return: mat,vec
 void generate_linear_system(double *a, double *x, double *b, double range, int band_size);
+void copy_linear_system(double *d_a, double *d_x, double *d_b, double *a, double *x, double *b);
 
 // matrices
 void gen_identity_float128(__float128 *mat);

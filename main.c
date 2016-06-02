@@ -4,6 +4,7 @@
 #include "lu.h"
 #include "gen.h"
 #include "solve.h"
+#include "rdft.h"
 
 // double
 double *a;
@@ -79,7 +80,7 @@ double d_pp_iter_err;
 double d_pp_iter_another_err;
 
 void print_double(double d){
-  printf("%f", d);
+  printf("%.10e", d);
 }
 
 void run(int dat, int opt, int exe, int band_size, int x_axis){
@@ -93,9 +94,47 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
 
   generate_linear_system(a,x,b, 1.0, band_size);
 
+  if(exe & (GENP | GENP_ITERATION)){
+    int dim = MATRIX_SIZE;
+    int inc = 1;
+    double minus1 = -1;
+
+    copy_linear_system(d_a,d_x,d_b, a,x,b);
+
+    alloc_vector_double(&d_x_np, MATRIX_SIZE);
+
+    solve_no_pivoting(d_a, d_b, d_x_np, NULL, NULL);
+
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_np, &inc);
+    d_np_err = dnrm2_(&dim, d_x_np, &inc);
+
+    free_vector_double(&d_x_np);
+  }
+  if(exe & (RDFT | RDFT_ITERATION)){
+    int dim = MATRIX_SIZE;
+    int inc = 1;
+    double minus1 = -1;
+
+    copy_linear_system(d_a,d_x,d_b, a,x,b);
+
+    alloc_vector_double(&d_x_rdft, MATRIX_SIZE);
+    alloc_vector_double(&d_x_rdft_iter, MATRIX_SIZE);
+    alloc_vector_double(&d_x_rdft_iter_another, MATRIX_SIZE);
+
+    rdft_original_slow(d_a, d_b, d_x_rdft, d_x_rdft_iter, d_x_rdft_iter_another);
+
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft, &inc);
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_iter, &inc);
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_iter_another, &inc);
+    d_rdft_err              = dnrm2_(&dim, d_x_rdft, &inc);
+    d_rdft_iter_err         = dnrm2_(&dim, d_x_rdft_iter, &inc);
+    d_rdft_iter_another_err = dnrm2_(&dim, d_x_rdft_iter_another, &inc);
+
+    free_vector_double(&d_x_rdft);
+    free_vector_double(&d_x_rdft_iter);
+    free_vector_double(&d_x_rdft_iter_another);
+  }
   /*
-  if(exe & (GENP | GENP_ITERATION)){}
-  if(exe & (RDFT | RDFT_ITERATION)){}
   if(exe & (RDFT_PERM | RDFT_PERM_ITERATION)){}
   if(exe & (RDFT_GIVENS | RDFT_GIVENS_ITERATION)){}
   if(exe & (RDFT_GIVENS_TWO | RDFT_GIVENS_TWO_ITERATION)){}
@@ -137,8 +176,7 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
 
     solve_with_partial_pivot(d_a, d_b, d_x_pp, NULL, NULL);
 
-    //daxpy_(&dim, &minus1, d_x, &inc, d_x_pp, &inc);
-
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_pp, &inc);
     d_pp_err = dnrm2_(&dim, d_x_pp, &inc);
 
     free_vector_double(&d_x_pp);
@@ -303,14 +341,23 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
 }
 
 int main(){
-// NORMAL UNIFORM_ABS_ONE UNIFORM_POSITIVE SET_ABS_ONE SET_POSITIVE IJ_ABS MAX_IJ CIRCULANT HADAMARD PERMUTE TURING
   //for(int i=0; i<MATRIX_SIZE/2; i++){
   for(int i=0; i<1; i++){
 //    for(int j=0; j<3; j++)
       run(i,2, EXE, i+1, MATRIX_SIZE);
-    fprintf(stderr, "%d ", i);
+    //fprintf(stderr, "%d ", i);
     //fprintf(stderr, "%d ", MATRIX_SIZE);
   }
+
+/*
+  //double t[4] = {5.0, 4.0, -2.0, 1.0};
+  double t[4] = {5.0, -2.0, 4.0, 1.0};
+  int two = 2;
+  dgetrfw_(&two, &two, t, &two);
+  for(int i=0; i<4; i++)
+    printf("%lf ", t[i]);
+  printf("\n");
+*/
 
   return 0;
 }

@@ -28,7 +28,7 @@
 #define ALL                        (RDFT | RDFT_ITERATION | RDFT_PERM | RDFT_PERM_ITERATION | RDFT_GIVENS | RDFT_GIVENS_ITERATION | GAUSS | GAUSS_ITERATION | PP | PP_ITERATION | GENP | GENP_ITERATION)
 
 // [1] EXECUTION METHOD
-#define EXE ( GAUSS)
+#define EXE (GENP | PP | GAUSS | RDFT)
 // -------------------------------------- //
 
 #define RANDOM        1
