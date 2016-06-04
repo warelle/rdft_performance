@@ -1,8 +1,9 @@
 #ifndef MYTEST_H
 #define MYTEST_H
 
-#define MATRIX_SIZE 128
+#define MATRIX_SIZE 512
 #define ITER_MAX 1
+//#define THDEAD_NUM 2
 
 #include "global.h"
 #include "blas_extern.h"
@@ -54,5 +55,10 @@
 // [2] TEST MATRIX
 #define TEST_MATRIX RANDOM
 // -------------------------------------- //
+
+#ifdef THREAD_NUM
+#include <omp.h>
+omp_set_num_threads(THREAD_NUM);
+#endif
 
 #endif

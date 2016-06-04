@@ -1,3 +1,4 @@
+#include "matrix_double.h"
 #include "gauss.h"
 #include "gen.h"
 #include "lu.h"

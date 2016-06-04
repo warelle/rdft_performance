@@ -1,6 +1,9 @@
+#include "matrix_complex.h"
 #include "rdft.h"
 #include "gen.h"
 #include <math.h>
+#include <complex.h>
+#include <fftw3.h>
 
 #define MATH_PI 3.14159265358979
 
@@ -72,6 +75,64 @@ void rdft_original_slow(double *a, double *b, double *x, double *xi, double *xia
   free_vector_complex_double(&y);
   free_vector_complex_double(&z);
   free_matrix_complex_double(&atmp);
+}
+
+#include <stdio.h>
+void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia){
+  /*
+   * FRA = RFA =R(FA)
+   * FRAx = FRb <=> R(FA)x = R(Fb)
+   *
+   */
+  int size=MATRIX_SIZE, inc=1;
+  dcomplex *fra, *frb, *r;
+  dcomplex alpha=CNUM(1.0, 0.0);
+  char non = 'N', l='L', u='U';
+
+  alloc_matrix_complex_double(&fra, MATRIX_SIZE);
+  alloc_vector_complex_double(&r, MATRIX_SIZE);
+  alloc_vector_complex_double(&frb, MATRIX_SIZE);
+
+  // FFT
+  #pragma omp parallel for
+  for(int i=0; i<MATRIX_SIZE; i++){
+    fftw_plan ftplan = fftw_plan_dft_r2c_1d(MATRIX_SIZE, a+(MATRIX_SIZE*i), fra+(MATRIX_SIZE*i), FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+    fftw_execute(ftplan);
+    fftw_destroy_plan(ftplan);
+
+    for(int j=MATRIX_SIZE-1; j>=MATRIX_SIZE/2; j--)
+      fra[MATRIX_SIZE*i+j] = conj(fra[MATRIX_SIZE*i + MATRIX_SIZE-j]);
+  }
+  fftw_plan ftplan_b = fftw_plan_dft_r2c_1d(MATRIX_SIZE, b, frb, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+  fftw_execute(ftplan_b);
+  fftw_destroy_plan(ftplan_b);
+  for(int j=MATRIX_SIZE-1; j>=MATRIX_SIZE/2; j--)
+    frb[j] = conj(frb[MATRIX_SIZE-j]);
+
+  // Multiply R=diag(...)
+  r_matrix_complex_double(r);
+  #pragma omp parallel for
+  for(int i=0; i<MATRIX_SIZE; i++)
+    for(int j=0; j<MATRIX_SIZE; j++)
+      fra[i*MATRIX_SIZE + j] *= r[j];
+  for(int i=0; i<MATRIX_SIZE; i++)
+    frb[i] = r[i]*frb[i];
+
+  // lu steps
+  zgetrfw_(&size, &size, fra, &size);
+
+  ztrsm_(&l,&l,&non, &u,   &size,&inc, &alpha, fra, &size, frb, &size);
+  ztrsm_(&l,&u,&non, &non, &size,&inc, &alpha, fra, &size, frb, &size);
+
+  for(int i=0; i<MATRIX_SIZE; i++)
+    x[i] = creal(frb[i]);
+
+  // iteration_double(d_fa, d_l, d_u, d_fb, xi);
+  // iteration_double_another(d_f, a, d_l, d_u, b, xia);
+
+  free_matrix_complex_double(&fra);
+  free_vector_complex_double(&r);
+  free_vector_complex_double(&frb);
 }
 
 //-----------------------------------------------

@@ -1,4 +1,5 @@
 #include "gen.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -117,6 +118,10 @@ void generate_linear_system(double *a, double *x, double *b, double range, int b
   __float128 *vec = (__float128*)malloc((sizeof(__float128))*MATRIX_SIZE);
   __float128 *mv  = (__float128*)malloc((sizeof(__float128))*MATRIX_SIZE);
 
+  if(mat == NULL || vec == NULL || mv == NULL){
+    fprintf(stderr,"malloc error in gen.c");
+  }
+
   generate_linear_system_float_128(mat, vec, (__float128)range, band_size);
 
   for(int i=0; i<MATRIX_SIZE; i++){
@@ -128,10 +133,10 @@ void generate_linear_system(double *a, double *x, double *b, double range, int b
 
   for(int i=0; i<MATRIX_SIZE; i++){
     for(int j=0; j<MATRIX_SIZE; j++){
-      IDX(a,MATRIX_SIZE,i,j) = IDX(mat,MATRIX_SIZE,i,j);
+      IDX(a,MATRIX_SIZE,i,j) = (double)IDX(mat,MATRIX_SIZE,i,j);
     }
-    b[i] = mv[i];
-    x[i] = vec[i];
+    b[i] = (double)mv[i];
+    x[i] = (double)vec[i];
   }
 
   free(mat);

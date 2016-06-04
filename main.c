@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <math.h>
+#include "matrix_double.h"
 #include "test.h"
 #include "lu.h"
 #include "gen.h"
 #include "solve.h"
 #include "rdft.h"
+#include "gauss.h"
 
 // double
 double *a;
@@ -121,7 +123,8 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     alloc_vector_double(&d_x_rdft_iter, MATRIX_SIZE);
     alloc_vector_double(&d_x_rdft_iter_another, MATRIX_SIZE);
 
-    rdft_original_slow(d_a, d_b, d_x_rdft, d_x_rdft_iter, d_x_rdft_iter_another);
+    //rdft_original_slow(d_a, d_b, d_x_rdft, d_x_rdft_iter, d_x_rdft_iter_another);
+    fftw_rdft_original(d_a, d_b, d_x_rdft, d_x_rdft_iter, d_x_rdft_iter_another);
 
     daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft, &inc);
     daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_iter, &inc);
@@ -348,16 +351,6 @@ int main(){
     //fprintf(stderr, "%d ", i);
     //fprintf(stderr, "%d ", MATRIX_SIZE);
   }
-
-/*
-  //double t[4] = {5.0, 4.0, -2.0, 1.0};
-  double t[4] = {5.0, -2.0, 4.0, 1.0};
-  int two = 2;
-  dgetrfw_(&two, &two, t, &two);
-  for(int i=0; i<4; i++)
-    printf("%lf ", t[i]);
-  printf("\n");
-*/
 
   return 0;
 }

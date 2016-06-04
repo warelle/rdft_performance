@@ -1,6 +1,7 @@
 #include "solve.h"
 #include "lu.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 // solving
 double *d_f;
@@ -64,7 +65,10 @@ void solve_with_partial_pivot(double *a, double *b, double *x, double *xi, doubl
 
   int *piv = (int*)malloc(sizeof(int)*MATRIX_SIZE);
   double *work  = (double*)malloc(sizeof(double)*MATRIX_SIZE);
-  float  *workf = (float*) malloc(sizeof(float)*MATRIX_SIZE*MATRIX_SIZE);
+  float  *workf = (float*) malloc(sizeof(float)*MATRIX_SIZE*(MATRIX_SIZE+1));
+
+  if(piv == NULL || work == NULL || workf == NULL)
+    fprintf(stderr, "malloc error in solve.c\n");
 
   dsgesv_(&dim, &nrhs, a,&dim, piv, b,&dim, x,&dim, work, workf, &iter, &info);
 
