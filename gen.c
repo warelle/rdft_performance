@@ -47,7 +47,16 @@ int hadamard(int y,int x){
   return m*hadamard(y&n,x&n);
 }
 // --------------------------------------------------------
+int uniform_int(int min,int max){
+	static int i_init_flg = 0;
 
+	if(i_init_flg == 0) {
+		i_init_flg = 1;
+		srand((unsigned int)time(NULL));
+	}
+
+	return min + (int)(rand()*(max-min+1.0)/(1.0+RAND_MAX));
+}
 // return: random value
 double uniform(){
   static int init_flg = 0;

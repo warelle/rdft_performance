@@ -1,7 +1,7 @@
 # Makefile
 
 PROGRAM = main
-SUB_OBJ = lu.o gen.o solve.o gauss.o rdft.o
+SUB_OBJ = lu.o gen.o solve.o givens.o gauss.o rdft.o
 OBJ     = main.o $(SUB_OBJ)
 TESTER  = test.h blas_extern.h global.h
 CC      = gcc

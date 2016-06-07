@@ -1,7 +1,7 @@
 #ifndef MYTEST_H
 #define MYTEST_H
 
-#define MATRIX_SIZE 512
+#define MATRIX_SIZE 4096
 #define ITER_MAX 1
 //#define THDEAD_NUM 2
 
@@ -29,7 +29,7 @@
 #define ALL                        (RDFT | RDFT_ITERATION | RDFT_PERM | RDFT_PERM_ITERATION | RDFT_GIVENS | RDFT_GIVENS_ITERATION | GAUSS | GAUSS_ITERATION | PP | PP_ITERATION | GENP | GENP_ITERATION)
 
 // [1] EXECUTION METHOD
-#define EXE (GENP | PP | GAUSS | RDFT)
+#define EXE (GENP | PP | GAUSS | RDFT | RDFT_GIVENS_TWO)
 // -------------------------------------- //
 
 #define RANDOM        1

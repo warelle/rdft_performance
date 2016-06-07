@@ -1,9 +1,12 @@
 #include "matrix_complex.h"
+#include "matrix_double.h"
 #include "rdft.h"
+#include "givens.h"
 #include "gen.h"
 #include <math.h>
 #include <complex.h>
 #include <fftw3.h>
+#include <stdio.h>
 
 #define MATH_PI 3.14159265358979
 
@@ -77,7 +80,6 @@ void rdft_original_slow(double *a, double *b, double *x, double *xi, double *xia
   free_matrix_complex_double(&atmp);
 }
 
-#include <stdio.h>
 void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia){
   /*
    * FRA = RFA =R(FA)
@@ -85,7 +87,7 @@ void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia
    *
    */
   int size=MATRIX_SIZE, inc=1;
-  dcomplex *fra, *frb, *r;
+  dcomplex *fra=NULL, *frb=NULL, *r=NULL;
   dcomplex alpha=CNUM(1.0, 0.0);
   char non = 'N', l='L', u='U';
 
@@ -94,7 +96,7 @@ void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia
   alloc_vector_complex_double(&frb, MATRIX_SIZE);
 
   // FFT
-  #pragma omp parallel for
+  //#pragma omp parallel for
   for(int i=0; i<MATRIX_SIZE; i++){
     fftw_plan ftplan = fftw_plan_dft_r2c_1d(MATRIX_SIZE, a+(MATRIX_SIZE*i), fra+(MATRIX_SIZE*i), FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
     fftw_execute(ftplan);
@@ -135,39 +137,73 @@ void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia
   free_vector_complex_double(&frb);
 }
 
-//-----------------------------------------------
-/*
-int for_perm[MATRIX_SIZE];
-int init_for_perm_flg = 0;
+void fftw_rdft_right_two_givens(double *a, double *b, double *x, double *xi, double *xia){
+  /*
+   * FRASS = RFASS =R(F(ASS))
+   * FRASSy = FRb <=> R(F(ASS)y) = R(Fb), x=SSy
+   *
+   */
+  int size=MATRIX_SIZE, size2=MATRIX_SIZE*MATRIX_SIZE, inc=1;
+  double *ass=NULL;
+  dcomplex *fra=NULL, *frb=NULL, *r=NULL;
+  dcomplex alpha=CNUM(1.0, 0.0);
+  char non = 'N', l='L', u='U';
 
-void init_for_perm(){
-  int i;
-  for(i=0; i<MATRIX_SIZE; i++){
-    for_perm[i] = i;
+  alloc_matrix_double(&ass, MATRIX_SIZE);
+  alloc_matrix_complex_double(&fra, MATRIX_SIZE);
+  alloc_vector_complex_double(&r, MATRIX_SIZE);
+  alloc_vector_complex_double(&frb, MATRIX_SIZE);
+
+  givens_sequence_list *gsl1 = generate_givens(),
+                       *gsl2 = generate_givens();
+
+  dcopy_(&size2, a, &inc, ass, &inc);
+  mat_mul_givens_sequence(gsl1, ass);
+  mat_mul_givens_sequence(gsl2, ass);
+
+  // FFT
+  //#pragma omp parallel for
+  for(int i=0; i<MATRIX_SIZE; i++){
+    fftw_plan ftplan = fftw_plan_dft_r2c_1d(MATRIX_SIZE, ass+(MATRIX_SIZE*i), fra+(MATRIX_SIZE*i), FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+    fftw_execute(ftplan);
+    fftw_destroy_plan(ftplan);
+
+    for(int j=MATRIX_SIZE-1; j>=MATRIX_SIZE/2; j--)
+      fra[MATRIX_SIZE*i+j] = conj(fra[MATRIX_SIZE*i + MATRIX_SIZE-j]);
   }
-  init_for_perm_flg = 1;
+  fftw_plan ftplan_b = fftw_plan_dft_r2c_1d(MATRIX_SIZE, b, frb, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+  fftw_execute(ftplan_b);
+  fftw_destroy_plan(ftplan_b);
+  for(int j=MATRIX_SIZE-1; j>=MATRIX_SIZE/2; j--)
+    frb[j] = conj(frb[MATRIX_SIZE-j]);
+
+  // Multiply R=diag(...)
+  r_matrix_complex_double(r);
+  #pragma omp parallel for
+  for(int i=0; i<MATRIX_SIZE; i++)
+    for(int j=0; j<MATRIX_SIZE; j++)
+      fra[i*MATRIX_SIZE + j] *= r[j];
+  for(int i=0; i<MATRIX_SIZE; i++)
+    frb[i] = r[i]*frb[i];
+
+  // lu steps
+  zgetrfw_(&size, &size, fra, &size);
+
+  ztrsm_(&l,&l,&non, &u,   &size,&inc, &alpha, fra, &size, frb, &size);
+  ztrsm_(&l,&u,&non, &non, &size,&inc, &alpha, fra, &size, frb, &size);
+
+  for(int i=0; i<MATRIX_SIZE; i++)
+    x[i] = creal(frb[i]);
+
+  mat_vec_dot_givens_sequence(gsl2,x);
+  mat_vec_dot_givens_sequence(gsl1,x);
+
+  // iteration_double(d_fa, d_l, d_u, d_fb, xi);
+  // iteration_double_another(d_f, a, d_l, d_u, b, xia);
+
+  free_matrix_double(&ass);
+  free_matrix_complex_double(&fra);
+  free_vector_complex_double(&r);
+  free_vector_complex_double(&frb);
 }
 
-void perm_matrix_double(double *r){
-  int i,j;
-  std::random_device rd;
-	std::mt19937 mt(rd());
-
-  if(! init_for_perm_flg){
-    init_for_perm();
-  }
-
-  for(i=0; i<MATRIX_SIZE; i++){
-    for(j=0; j<MATRIX_SIZE; j++){
-      r[i][j] = 0;
-    }
-  }
-
-  std::vector<int> perm(for_perm,for_perm+MATRIX_SIZE);
-  for(i=0; i<MATRIX_SIZE; i++){
-    int idx = mt() % (MATRIX_SIZE - i);
-    r[i][perm[idx]] = 1.0;
-    perm.erase(perm.begin()+idx);
-  }
-}
-*/

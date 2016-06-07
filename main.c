@@ -37,9 +37,6 @@ double *d_x_rdft_givens_two_iter_another;
 double *d_x_rdft_both_givens;
 double *d_x_rdft_both_givens_iter;
 double *d_x_rdft_both_givens_iter_another;
-double *d_x_rdht;
-double *d_x_rdht_iter;
-double *d_x_rdht_iter_another;
 double *d_x_gauss;
 double *d_x_gauss_iter;
 double *d_x_gauss_iter_another;
@@ -68,9 +65,6 @@ double d_rdft_givens_two_iter_another_err;
 double d_rdft_both_givens_err;
 double d_rdft_both_givens_iter_err;
 double d_rdft_both_givens_iter_another_err;
-double d_rdht_err;
-double d_rdht_iter_err;
-double d_rdht_iter_another_err;
 double d_gauss_err;
 double d_gauss_iter_err;
 double d_gauss_iter_another_err;
@@ -140,7 +134,32 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
   /*
   if(exe & (RDFT_PERM | RDFT_PERM_ITERATION)){}
   if(exe & (RDFT_GIVENS | RDFT_GIVENS_ITERATION)){}
-  if(exe & (RDFT_GIVENS_TWO | RDFT_GIVENS_TWO_ITERATION)){}
+  */
+  if(exe & (RDFT_GIVENS_TWO | RDFT_GIVENS_TWO_ITERATION)){
+    int dim = MATRIX_SIZE;
+    int inc = 1;
+    double minus1 = -1;
+
+    copy_linear_system(d_a,d_x,d_b, a,x,b);
+
+    alloc_vector_double(&d_x_rdft_givens_two, MATRIX_SIZE);
+    alloc_vector_double(&d_x_rdft_givens_two_iter, MATRIX_SIZE);
+    alloc_vector_double(&d_x_rdft_givens_two_iter_another, MATRIX_SIZE);
+
+    fftw_rdft_right_two_givens(d_a, d_b, d_x_rdft_givens_two, d_x_rdft_givens_two_iter, d_x_rdft_givens_two_iter_another);
+
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_givens_two, &inc);
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_givens_two_iter, &inc);
+    daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_givens_two_iter_another, &inc);
+    d_rdft_givens_two_err              = dnrm2_(&dim, d_x_rdft_givens_two, &inc);
+    d_rdft_givens_two_iter_err         = dnrm2_(&dim, d_x_rdft_givens_two_iter, &inc);
+    d_rdft_givens_two_iter_another_err = dnrm2_(&dim, d_x_rdft_givens_two_iter_another, &inc);
+
+    free_vector_double(&d_x_rdft_givens_two);
+    free_vector_double(&d_x_rdft_givens_two_iter);
+    free_vector_double(&d_x_rdft_givens_two_iter_another);
+  }
+  /*
   if(exe & (RDFT_BOTH_GIVENS | RDFT_BOTH_GIVENS_ITERATION)){}
   */
 

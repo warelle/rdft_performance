@@ -20,6 +20,8 @@ extern void zaxpy_(int*, dcomplex*, dcomplex*, int*, dcomplex*, int*);
 extern double dnrm2_(int*, double*, int*);
 extern double znrm2_(int*, dcomplex*, int*);
 
+extern void drot_(int*, double*, int*, double*, int*, double*, double*);
+
 extern void zscal_(int*, dcomplex*, dcomplex*, int*);
 
 //----------------- LEVEL 2 BLAS ------------------//

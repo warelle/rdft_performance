@@ -4,6 +4,7 @@
 #include "test.h"
 
 // return: random value
+int uniform_int(int,int);
 double uniform();
 double rand_normal_double(double m, double s);
 
