@@ -32,7 +32,6 @@ void rdft_original_slow(double *a, double *b, double *x, double *xi, double *xia
   int size=MATRIX_SIZE, inc=1;
   dcomplex *fra, *fr, *r, *y, *z, *atmp;
   dcomplex alpha=CNUM(1.0, 0.0), zero=CNUM(0.0, 0.0);
-  char non = 'N', l='L', u='U';
 
   alloc_matrix_complex_double(&fra, MATRIX_SIZE);
   alloc_matrix_complex_double(&fr, MATRIX_SIZE);
@@ -51,7 +50,7 @@ void rdft_original_slow(double *a, double *b, double *x, double *xi, double *xia
   for(int i=0; i<MATRIX_SIZE; i++)
     zscal_(&size, (r+i), fr, &inc);
 
-  zgemm_(&non,&non, &size,&size,&size, &alpha, atmp,&size, fr,&size, &zero, fra, &size);
+  zgemm_("N","N", &size,&size,&size, &alpha, atmp,&size, fr,&size, &zero, fra, &size);
 
   // lu steps
   zgetrfw_(&size, &size, fra, &size);
@@ -60,11 +59,11 @@ void rdft_original_slow(double *a, double *b, double *x, double *xi, double *xia
   for(int i=0; i<MATRIX_SIZE; i++)
     y[i] = CNUM(b[i],0.0);
 
-  ztrsm_(&l,&l,&non, &u,   &size,&inc, &alpha, fra, &size, y, &size);
-  ztrsm_(&l,&u,&non, &non, &size,&inc, &alpha, fra, &size, y, &size);
+  ztrsm_("L","L","N", "U", &size,&inc, &alpha, fra, &size, y, &size);
+  ztrsm_("L","U","N", "N", &size,&inc, &alpha, fra, &size, y, &size);
 
   // x = Gx
-  zgemv_(&non, &size, &size, &alpha, fr, &size, y, &inc, &zero, z, &inc);
+  zgemv_("N", &size, &size, &alpha, fr, &size, y, &inc, &zero, z, &inc);
 
   for(int i=0; i<MATRIX_SIZE; i++)
     x[i] = creal(z[i]);
@@ -88,7 +87,6 @@ void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia
    */
   int size=MATRIX_SIZE, inc=1;
   dcomplex alpha=CNUM(1.0, 0.0);
-  char non = 'N', l='L', u='U';
 
   // FFT
   //#pragma omp parallel for
@@ -118,8 +116,8 @@ void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia
   // lu steps
   zgetrfw_(&size, &size, fra, &size);
 
-  ztrsm_(&l,&l,&non, &u,   &size,&inc, &alpha, fra, &size, frb, &size);
-  ztrsm_(&l,&u,&non, &non, &size,&inc, &alpha, fra, &size, frb, &size);
+  ztrsm_("L","L","N", "U", &size,&inc, &alpha, fra, &size, frb, &size);
+  ztrsm_("L","U","N", "N", &size,&inc, &alpha, fra, &size, frb, &size);
 
   for(int i=0; i<MATRIX_SIZE; i++)
     x[i] = creal(frb[i]);
@@ -138,7 +136,6 @@ void fftw_rdft_right_two_givens(double *a, double *b, double *x, double *xi, dou
   double *ass=NULL;
   dcomplex *fra=NULL, *frb=NULL, *r=NULL;
   dcomplex alpha=CNUM(1.0, 0.0);
-  char non = 'N', l='L', u='U';
 
   alloc_matrix_double(&ass, MATRIX_SIZE);
   alloc_matrix_complex_double(&fra, MATRIX_SIZE);
@@ -180,8 +177,8 @@ void fftw_rdft_right_two_givens(double *a, double *b, double *x, double *xi, dou
   // lu steps
   zgetrfw_(&size, &size, fra, &size);
 
-  ztrsm_(&l,&l,&non, &u,   &size,&inc, &alpha, fra, &size, frb, &size);
-  ztrsm_(&l,&u,&non, &non, &size,&inc, &alpha, fra, &size, frb, &size);
+  ztrsm_("L","L","N", "U", &size,&inc, &alpha, fra, &size, frb, &size);
+  ztrsm_("L","U","N", "N", &size,&inc, &alpha, fra, &size, frb, &size);
 
   for(int i=0; i<MATRIX_SIZE; i++)
     x[i] = creal(frb[i]);

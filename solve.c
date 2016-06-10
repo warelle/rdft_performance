@@ -26,7 +26,6 @@ double d_ax[MATRIX_SIZE];
 void solve_no_pivoting(double *a, double *b, double *x, double *xi, double *xia){
   double alpha=1.0;
   int size = MATRIX_SIZE, inc=1;
-  char non = 'N', l='L', u='U';
 
   // lu steps
   dgetrfw_(&size, &size, a, &size);
@@ -34,8 +33,8 @@ void solve_no_pivoting(double *a, double *b, double *x, double *xi, double *xia)
   // back-forward
   dcopy_(&size, b,&inc, x,&inc);
 
-  dtrsm_(&l,&l,&non, &u,   &size,&inc, &alpha, a, &size, x, &size);
-  dtrsm_(&l,&u,&non, &non, &size,&inc, &alpha, a, &size, x, &size);
+  dtrsm_("L","L","N","U", &size,&inc, &alpha, a, &size, x, &size);
+  dtrsm_("L","U","N","N", &size,&inc, &alpha, a, &size, x, &size);
 }
 
 void solve_with_partial_pivot(double *a, double *b, double *x, double *xi, double *xia){

@@ -16,8 +16,6 @@ void solve_with_gauss_iteration_double(double *a, double *b, double *x, double *
   double *g, *ag, *y;
   double alpha=1.0, zero=0.0;
   int size = MATRIX_SIZE, inc=1;
-  char non = 'N';
-  char l='L', u='U';
 
   alloc_matrix_double(&g, MATRIX_SIZE);
   alloc_matrix_double(&ag, MATRIX_SIZE);
@@ -25,7 +23,7 @@ void solve_with_gauss_iteration_double(double *a, double *b, double *x, double *
   gauss_matrix(g);
 
   // ag <= A*G
-  dgemm_(&non,&non, &size,&size,&size, &alpha, a,&size, g,&size, &zero, ag, &size);
+  dgemm_("N","N", &size,&size,&size, &alpha, a,&size, g,&size, &zero, ag, &size);
 
   // lu steps
   dgetrfw_(&size, &size, ag, &size);
@@ -33,11 +31,11 @@ void solve_with_gauss_iteration_double(double *a, double *b, double *x, double *
   // back-forward
   dcopy_(&size, b,&inc, y,&inc);
 
-  dtrsm_(&l,&l,&non, &u,   &size,&inc, &alpha, ag, &size, y, &size);
-  dtrsm_(&l,&u,&non, &non, &size,&inc, &alpha, ag, &size, y, &size);
+  dtrsm_("L","L","N","U", &size,&inc, &alpha, ag, &size, y, &size);
+  dtrsm_("L","U","N","N", &size,&inc, &alpha, ag, &size, y, &size);
 
   // x = Gx
-  dgemv_(&non, &size, &size, &alpha, g, &size, y, &inc, &zero, x, &inc);
+  dgemv_("N", &size, &size, &alpha, g, &size, y, &inc, &zero, x, &inc);
 
   // iteration_double(d_fa, d_l, d_u, d_fb, xi);
   // iteration_double_another(d_f, a, d_l, d_u, b, xia);
