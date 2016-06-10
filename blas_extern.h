@@ -34,7 +34,7 @@ extern void dgemm_(char*, char*, int*, int*, int*, double*, double*, int*, doubl
 extern void zgemm_(char*, char*, int*, int*, int*, dcomplex*, dcomplex*, int*, dcomplex*, int*, dcomplex*, dcomplex*, int*);
 
 //----------------- LAPACK ------------------//
-extern void dsgesv_(int*,int*,double*,int*,int*,double*,int*,double*,int*,double*,float*,int*,int*);
+extern void dgesv_(int*,int*,double*,int*,int*,double*,int*,int*);
 extern void dtrsm_ (char*, char*, char*, char*, int*, int*, double*, double*, int*, double*, int*);
 
 extern void zsgesv_(int*,int*,dcomplex*,int*,int*,dcomplex*,int*,dcomplex*,int*,dcomplex*,float*,int*,int*);

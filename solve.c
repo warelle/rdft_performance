@@ -60,17 +60,19 @@ void solve_no_pivoting(double *a, double *b, double *x, double *xi, double *xia)
 
 void solve_with_partial_pivot(double *a, double *b, double *x, double *xi, double *xia){
   int dim = MATRIX_SIZE;
-  int nrhs = 1;
-  int iter,info;
+  int nrhs = 1, inc = 1;
+  double alpha = 1.0;
+  int info;
 
   int *piv = (int*)malloc(sizeof(int)*MATRIX_SIZE);
-  double *work  = (double*)malloc(sizeof(double)*MATRIX_SIZE);
-  float  *workf = (float*) malloc(sizeof(float)*MATRIX_SIZE*(MATRIX_SIZE+1));
-
-  if(piv == NULL || work == NULL || workf == NULL)
+  if(piv == NULL)
     fprintf(stderr, "malloc error in solve.c\n");
 
-  dsgesv_(&dim, &nrhs, a,&dim, piv, b,&dim, x,&dim, work, workf, &iter, &info);
+  dgesv_(&dim, &nrhs, a,&dim, piv, b,&dim, &info);
+
+  dcopy_(&dim, b,&inc, x,&inc);
+
+  free(piv);
 
   // iteration_double(d_ap,d_l, d_u, d_bp, xi);
   // iteration_double_another(d_perm, a,d_l, d_u, b, xia);
