@@ -3,7 +3,7 @@
 
 #define MATRIX_SIZE 4096
 #define ITER_MAX 1
-//#define THDEAD_NUM 2
+#define THDEAD_NUM 4
 
 #include "global.h"
 #include "blas_extern.h"

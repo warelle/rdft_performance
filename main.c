@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "matrix_double.h"
+#include "matrix_complex.h"
 #include "test.h"
 #include "lu.h"
 #include "gen.h"
@@ -110,6 +111,7 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     int dim = MATRIX_SIZE;
     int inc = 1;
     double minus1 = -1;
+    dcomplex *fra=NULL, *frb=NULL, *r=NULL;
 
     copy_linear_system(d_a,d_x,d_b, a,x,b);
 
@@ -117,8 +119,11 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     alloc_vector_double(&d_x_rdft_iter, MATRIX_SIZE);
     alloc_vector_double(&d_x_rdft_iter_another, MATRIX_SIZE);
 
+    alloc_matrix_complex_double(&fra, MATRIX_SIZE);
+    alloc_vector_complex_double(&r, MATRIX_SIZE);
+    alloc_vector_complex_double(&frb, MATRIX_SIZE);
     //rdft_original_slow(d_a, d_b, d_x_rdft, d_x_rdft_iter, d_x_rdft_iter_another);
-    fftw_rdft_original(d_a, d_b, d_x_rdft, d_x_rdft_iter, d_x_rdft_iter_another);
+    fftw_rdft_original(d_a, d_b, d_x_rdft, d_x_rdft_iter, d_x_rdft_iter_another, fra, r, frb);
 
     daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft, &inc);
     daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_iter, &inc);
@@ -126,6 +131,10 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     d_rdft_err              = dnrm2_(&dim, d_x_rdft, &inc);
     d_rdft_iter_err         = dnrm2_(&dim, d_x_rdft_iter, &inc);
     d_rdft_iter_another_err = dnrm2_(&dim, d_x_rdft_iter_another, &inc);
+
+    free_matrix_complex_double(&fra);
+    free_vector_complex_double(&r);
+    free_vector_complex_double(&frb);
 
     free_vector_double(&d_x_rdft);
     free_vector_double(&d_x_rdft_iter);

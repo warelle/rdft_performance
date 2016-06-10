@@ -157,10 +157,20 @@ void mat_vec_dot_givens_matrix_list(givens_matrix_list *gml, double *a){
   }
 }
 void mat_vec_dot_givens_sequence(givens_sequence_list *gsl, double *a){
+#ifndef THREAD_NUM
   while(gsl != NULL){
     mat_vec_dot_givens_matrix_list(gsl->gml, a);
     gsl = gsl->next;
   }
+#else
+  #pragma omp parallel for
+  for(int i=0; i<THREAD_NUM; i++){
+    givens_sequence_list *t_gsl = gsl;
+    for(int j=0; j<i; i++)
+      t_gsl = t_gsl->next;
+    mat_vec_dot_givens_matrix_list(t_gsl->gml, a);
+  }
+#endif
 }
 
 // ----- givens matrix-matrix multiplication ----- //
@@ -175,8 +185,18 @@ void mat_mul_givens_matrix_list(givens_matrix_list *gml, double *a){
   }
 }
 void mat_mul_givens_sequence(givens_sequence_list *gsl, double *a){
+#ifndef THREAD_NUM
   while(gsl != NULL){
     mat_mul_givens_matrix_list(gsl->gml, a);
     gsl = gsl->next;
   }
+#else
+  #pragma omp parallel for
+  for(int i=0; i<THREAD_NUM; i++){
+    givens_sequence_list *t_gsl = gsl;
+    for(int j=0; j<i; i++)
+      t_gsl = t_gsl->next;
+    mat_mul_givens_matrix_list(t_gsl->gml, a);
+  }
+#endif
 }

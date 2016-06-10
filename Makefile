@@ -28,6 +28,9 @@ gen.o: gen.c $(TESTER)
 .c.o: $(TESTER)
 	$(CC) $(CFLAGS) -c $< $(HDR_DIR) -fopenmp
 
+lutest: lu_test.c
+	$(CC) $(CFLAGS) -o lu_test lu_test.c $(SUB_OBJ) $(MOD_LIB) $(LIBLINK) $(QM_LIB)
+
 .PHONY: clean
 clean:
 	rm $(PROGRAM) $(OBJ)

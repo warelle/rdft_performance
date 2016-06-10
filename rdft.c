@@ -80,20 +80,15 @@ void rdft_original_slow(double *a, double *b, double *x, double *xi, double *xia
   free_matrix_complex_double(&atmp);
 }
 
-void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia){
+void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia, dcomplex *fra, dcomplex *r, dcomplex *frb){
   /*
    * FRA = RFA =R(FA)
    * FRAx = FRb <=> R(FA)x = R(Fb)
    *
    */
   int size=MATRIX_SIZE, inc=1;
-  dcomplex *fra=NULL, *frb=NULL, *r=NULL;
   dcomplex alpha=CNUM(1.0, 0.0);
   char non = 'N', l='L', u='U';
-
-  alloc_matrix_complex_double(&fra, MATRIX_SIZE);
-  alloc_vector_complex_double(&r, MATRIX_SIZE);
-  alloc_vector_complex_double(&frb, MATRIX_SIZE);
 
   // FFT
   //#pragma omp parallel for
@@ -131,10 +126,6 @@ void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia
 
   // iteration_double(d_fa, d_l, d_u, d_fb, xi);
   // iteration_double_another(d_f, a, d_l, d_u, b, xia);
-
-  free_matrix_complex_double(&fra);
-  free_vector_complex_double(&r);
-  free_vector_complex_double(&frb);
 }
 
 void fftw_rdft_right_two_givens(double *a, double *b, double *x, double *xi, double *xia){
