@@ -13,26 +13,6 @@ double *d_u;
 double *d_y;
 double *d_frb;
 
-//std::complex<double> cd_f[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_r[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_rp[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_rp_sub[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_rgivens[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_rgivens_sub[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_fr[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_frg[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_frg_tmp[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_fra[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_l[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_u[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_y[MATRIX_SIZE];
-//std::complex<double> cd_frb[MATRIX_SIZE];
-//std::complex<double> cd_tmp[MATRIX_SIZE][MATRIX_SIZE];
-//
-//std::complex<double> cd_r1[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_r2[MATRIX_SIZE][MATRIX_SIZE];
-//std::complex<double> cd_r3[MATRIX_SIZE][MATRIX_SIZE];
-
 double d_w[MATRIX_SIZE];
 double d_v[MATRIX_SIZE];
 double d_z[MATRIX_SIZE];
