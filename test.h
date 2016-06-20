@@ -1,7 +1,7 @@
 #ifndef MYTEST_H
 #define MYTEST_H
 
-#define MATRIX_SIZE 4096
+#define MATRIX_SIZE 1024
 #define ITER_MAX 1
 #define THDEAD_NUM 4
 

@@ -1,5 +1,4 @@
 #include "matrix_complex.h"
-#include "matrix_double.h"
 #include "rdft.h"
 #include "givens.h"
 #include "gen.h"
@@ -126,21 +125,14 @@ void fftw_rdft_original(double *a, double *b, double *x, double *xi, double *xia
   // iteration_double_another(d_f, a, d_l, d_u, b, xia);
 }
 
-void fftw_rdft_right_two_givens(double *a, double *b, double *x, double *xi, double *xia){
+void fftw_rdft_right_two_givens(double *a, double *b, double *x, double *xi, double *xia, dcomplex *fra, dcomplex *r, dcomplex *frb, double *ass){
   /*
    * FRASS = RFASS =R(F(ASS))
    * FRASSy = FRb <=> R(F(ASS)y) = R(Fb), x=SSy
    *
    */
   int size=MATRIX_SIZE, size2=MATRIX_SIZE*MATRIX_SIZE, inc=1;
-  double *ass=NULL;
-  dcomplex *fra=NULL, *frb=NULL, *r=NULL;
   dcomplex alpha=CNUM(1.0, 0.0);
-
-  alloc_matrix_double(&ass, MATRIX_SIZE);
-  alloc_matrix_complex_double(&fra, MATRIX_SIZE);
-  alloc_vector_complex_double(&r, MATRIX_SIZE);
-  alloc_vector_complex_double(&frb, MATRIX_SIZE);
 
   givens_sequence_list *gsl1 = generate_givens(),
                        *gsl2 = generate_givens();
@@ -188,10 +180,5 @@ void fftw_rdft_right_two_givens(double *a, double *b, double *x, double *xi, dou
 
   // iteration_double(d_fa, d_l, d_u, d_fb, xi);
   // iteration_double_another(d_f, a, d_l, d_u, b, xia);
-
-  free_matrix_double(&ass);
-  free_matrix_complex_double(&fra);
-  free_vector_complex_double(&r);
-  free_vector_complex_double(&frb);
 }
 

@@ -148,6 +148,8 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     int dim = MATRIX_SIZE;
     int inc = 1;
     double minus1 = -1;
+    dcomplex *fra,*r,*frb;
+    double *ass;
 
     copy_linear_system(d_a,d_x,d_b, a,x,b);
 
@@ -155,7 +157,11 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     alloc_vector_double(&d_x_rdft_givens_two_iter, MATRIX_SIZE);
     alloc_vector_double(&d_x_rdft_givens_two_iter_another, MATRIX_SIZE);
 
-    fftw_rdft_right_two_givens(d_a, d_b, d_x_rdft_givens_two, d_x_rdft_givens_two_iter, d_x_rdft_givens_two_iter_another);
+    alloc_matrix_complex_double(&fra, MATRIX_SIZE);
+    alloc_vector_complex_double(&r, MATRIX_SIZE);
+    alloc_vector_complex_double(&frb, MATRIX_SIZE);
+    alloc_matrix_double(&ass, MATRIX_SIZE);
+    fftw_rdft_right_two_givens(d_a, d_b, d_x_rdft_givens_two, d_x_rdft_givens_two_iter, d_x_rdft_givens_two_iter_another, fra,r,frb, ass);
 
     daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_givens_two, &inc);
     daxpy_(&dim, &minus1, d_x, &inc, d_x_rdft_givens_two_iter, &inc);
@@ -163,6 +169,11 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     d_rdft_givens_two_err              = dnrm2_(&dim, d_x_rdft_givens_two, &inc);
     d_rdft_givens_two_iter_err         = dnrm2_(&dim, d_x_rdft_givens_two_iter, &inc);
     d_rdft_givens_two_iter_another_err = dnrm2_(&dim, d_x_rdft_givens_two_iter_another, &inc);
+
+    free_matrix_complex_double(&fra);
+    free_vector_complex_double(&r);
+    free_matrix_complex_double(&frb);
+    free_matrix_double(&ass);
 
     free_vector_double(&d_x_rdft_givens_two);
     free_vector_double(&d_x_rdft_givens_two_iter);
@@ -176,6 +187,7 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     int dim = MATRIX_SIZE;
     int inc = 1;
     double minus1 = -1;
+    double *g=NULL,*ga=NULL;
 
     copy_linear_system(d_a,d_x,d_b, a,x,b);
 
@@ -183,7 +195,9 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     alloc_vector_double(&d_x_gauss_iter, MATRIX_SIZE);
     alloc_vector_double(&d_x_gauss_iter_another, MATRIX_SIZE);
 
-    solve_with_gauss_iteration_double(d_a, d_b, d_x_gauss, d_x_gauss_iter, d_x_gauss_iter_another);
+    alloc_matrix_double(&ga, MATRIX_SIZE);
+    alloc_matrix_double(&g, MATRIX_SIZE);
+    solve_with_gauss_iteration_double(d_a, d_b, d_x_gauss, d_x_gauss_iter, d_x_gauss_iter_another, g,ga);
 
     daxpy_(&dim, &minus1, d_x, &inc, d_x_gauss, &inc);
     daxpy_(&dim, &minus1, d_x, &inc, d_x_gauss_iter, &inc);
@@ -191,6 +205,9 @@ void run(int dat, int opt, int exe, int band_size, int x_axis){
     d_gauss_err              = dnrm2_(&dim, d_x_gauss, &inc);
     d_gauss_iter_err         = dnrm2_(&dim, d_x_gauss_iter, &inc);
     d_gauss_iter_another_err = dnrm2_(&dim, d_x_gauss_iter_another, &inc);
+
+    free_matrix_double(&g);
+    free_matrix_double(&ga);
 
     free_vector_double(&d_x_gauss);
     free_vector_double(&d_x_gauss_iter);
